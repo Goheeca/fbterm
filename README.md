@@ -13,7 +13,8 @@ FbTerm is a fast terminal emulator for linux with frame buffer device or VESA vi
   * copy/past selected text between windows with mouse when gpm server is running
   * change the orientation of screen display, a.k.a. screen rotation
   * lightweight input method framework with client-server architecture
-  * background image for eye candy
+  * background image for eye candy (set `FBTERM_BACKGROUND_IMAGE`)
+  * mmapped background image (set `FBTERM_BACKGROUND_IMAGE_PATH` to the file)
 
 read man page doc/fbterm.1 for usage help.
 

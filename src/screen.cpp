@@ -104,6 +104,10 @@ Screen::Screen()
 	mVMemBase = 0;
 	mPalette = 0;
 
+	mBackgroundFd = -1;
+	mBackgroundData = NULL;
+	mSize = 0;
+
 	u32 type = Rotate0;
 	Config::instance()->getOption("screen-rotate", type);
 	if (type > Rotate270) type = Rotate0;

@@ -50,7 +50,7 @@ public :
 
 	bool move(u16 scol, u16 srow, u16 dcol, u16 drow, u16 w, u16 h);
 	void setPalette(const Color *palette);
-	
+
 	void enableScroll(bool enable) { mScrollEnable = enable; }
 
 	void showInfo(bool verbose);
@@ -101,5 +101,9 @@ private:
 	fillFun fill;
 	drawFun draw;
 	bool mScrollEnable;
+
+	int mBackgroundFd;
+	void* mBackgroundData;
+	u32 mSize;
 };
 #endif

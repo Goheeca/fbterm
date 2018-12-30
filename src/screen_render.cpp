@@ -20,6 +20,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "screen.h"
 #include "fbconfig.h"
 
@@ -64,6 +68,7 @@ void Screen::setPalette(const Color *palette)
 
 void Screen::initFillDraw()
 {
+	char* backgroundPath;
 	if (mBitsPerPixel == 15) bytes_per_pixel = 2;
 	else bytes_per_pixel = (mBitsPerPixel >> 3);
 
@@ -84,6 +89,35 @@ void Screen::initFillDraw()
 		u32 size = mBytesPerLine * ((mRotateType == Rotate0 || mRotateType == Rotate180) ? mHeight : mWidth);
 		bgimage_mem = new u8[size];
 		memcpy(bgimage_mem, mVMemBase, size);
+	} else if (backgroundPath = getenv("FBTERM_BACKGROUND_IMAGE_PATH")) {
+		mBackgroundFd = open(backgroundPath, O_RDWR | O_CREAT, 0644);
+		if (mBackgroundFd != -1) {
+			struct stat st;
+			stat(backgroundPath, &st);
+			bool created = st.st_size == 0;
+
+			bg = true;
+			mScrollType = Redraw;
+
+			u32 color = 0;
+			Config::instance()->getOption("color-background", color);
+			if (color > 7) color = 0;
+			bgcolor = color;
+
+			mSize = mBytesPerLine * ((mRotateType == Rotate0 || mRotateType == Rotate180) ? mHeight : mWidth);
+			bgimage_mem = new u8[mSize];
+
+			int falloc = 0;
+			if(created) {
+				falloc = fallocate(mBackgroundFd, FALLOC_FL_ZERO_RANGE, 0, mSize);
+			}
+			if(!falloc) {
+ 				mBackgroundData = mmap(NULL, mSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, mBackgroundFd, 0);
+				if (mBackgroundData != MAP_FAILED) {
+					mempcpy(bgimage_mem, mBackgroundData, mSize);
+				}
+			}
+		}
 	}
 
 	fill = bg ? &Screen::fillXBg : &Screen::fillX;
@@ -107,6 +141,12 @@ void Screen::initFillDraw()
 void Screen::endFillDraw()
 {
 	if (bgimage_mem) delete[] bgimage_mem;
+	if (mBackgroundFd != -1) {
+		if (mBackgroundData != MAP_FAILED) {
+			munmap(mBackgroundData, mSize);
+		}
+		close(mBackgroundFd);
+	}
 }
 
 void Screen::fillX(u32 x, u32 y, u32 w, u8 color)
