@@ -14,7 +14,7 @@ FbTerm is a fast terminal emulator for linux with frame buffer device or VESA vi
   * change the orientation of screen display, a.k.a. screen rotation
   * lightweight input method framework with client-server architecture
   * background image for eye candy (set `FBTERM_BACKGROUND_IMAGE`)
-  * mmapped background image (set `FBTERM_BACKGROUND_IMAGE_PATH` to the file)
+  * background image fed through shared memory (set `FBTERM_BACKGROUND_IMAGE_PATH` to the shared memory path (e.g. `/fbterm.background` for `/dev/shm/fbterm.background` in linux); the background gets updated by signaling `SIGIO`
 
 read man page doc/fbterm.1 for usage help.
 

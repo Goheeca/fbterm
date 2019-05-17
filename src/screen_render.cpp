@@ -134,7 +134,7 @@ void Screen::endFillDraw()
 void Screen::redrawBg()
 {
 	if (mBackgroundData != MAP_FAILED) {
-		mempcpy(bgimage_mem, mBackgroundData, mSize);		
+		mempcpy(bgimage_mem, mBackgroundData, mSize);
 	}
 }
 
