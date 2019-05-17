@@ -37,6 +37,7 @@ static u32 fillColors[NR_COLORS];
 
 static u8 *bgimage_mem;
 static u8 bgcolor;
+static char *backgroundPath = NULL;
 
 void Screen::setPalette(const Color *palette)
 {
@@ -68,7 +69,6 @@ void Screen::setPalette(const Color *palette)
 
 void Screen::initFillDraw()
 {
-	char* backgroundPath;
 	if (mBitsPerPixel == 15) bytes_per_pixel = 2;
 	else bytes_per_pixel = (mBitsPerPixel >> 3);
 
@@ -77,7 +77,8 @@ void Screen::initFillDraw()
 	ppb = ppl >> 2;
 
 	bool bg = false;
-	if (getenv("FBTERM_BACKGROUND_IMAGE")) {
+	if (getenv("FBTERM_BACKGROUND_IMAGE")
+			|| (backgroundPath = getenv("FBTERM_BACKGROUND_IMAGE_PATH"))) {
 		bg = true;
 		mScrollType = Redraw;
 
@@ -86,36 +87,16 @@ void Screen::initFillDraw()
 		if (color > 7) color = 0;
 		bgcolor = color;
 
-		u32 size = mBytesPerLine * ((mRotateType == Rotate0 || mRotateType == Rotate180) ? mHeight : mWidth);
-		bgimage_mem = new u8[size];
-		memcpy(bgimage_mem, mVMemBase, size);
-	} else if (backgroundPath = getenv("FBTERM_BACKGROUND_IMAGE_PATH")) {
-		mBackgroundFd = open(backgroundPath, O_RDWR | O_CREAT, 0644);
-		if (mBackgroundFd != -1) {
-			struct stat st;
-			stat(backgroundPath, &st);
-			bool created = st.st_size == 0;
-
-			bg = true;
-			mScrollType = Redraw;
-
-			u32 color = 0;
-			Config::instance()->getOption("color-background", color);
-			if (color > 7) color = 0;
-			bgcolor = color;
-
-			mSize = mBytesPerLine * ((mRotateType == Rotate0 || mRotateType == Rotate180) ? mHeight : mWidth);
-			bgimage_mem = new u8[mSize];
-
+		mSize = mBytesPerLine * ((mRotateType == Rotate0 || mRotateType == Rotate180) ? mHeight : mWidth);
+		bgimage_mem = new u8[mSize];
+		if (!backgroundPath) {
+			memcpy(bgimage_mem, mVMemBase, mSize);
+		} else if ((mBackgroundFd = shm_open(backgroundPath, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR)) != -1) {
+			ftruncate(mBackgroundFd, mSize);
 			int falloc = 0;
-			if(created) {
-				falloc = fallocate(mBackgroundFd, FALLOC_FL_ZERO_RANGE, 0, mSize);
-			}
-			if(!falloc) {
+			if (falloc = fallocate(mBackgroundFd, FALLOC_FL_ZERO_RANGE, 0, mSize)) {
  				mBackgroundData = mmap(NULL, mSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, mBackgroundFd, 0);
-				if (mBackgroundData != MAP_FAILED) {
-					mempcpy(bgimage_mem, mBackgroundData, mSize);
-				}
+				redrawBg();
 			}
 		}
 	}
@@ -146,6 +127,14 @@ void Screen::endFillDraw()
 			munmap(mBackgroundData, mSize);
 		}
 		close(mBackgroundFd);
+		shm_unlink(backgroundPath);
+	}
+}
+
+void Screen::redrawBg()
+{
+	if (mBackgroundData != MAP_FAILED) {
+		mempcpy(bgimage_mem, mBackgroundData, mSize);		
 	}
 }
 

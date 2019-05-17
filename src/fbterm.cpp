@@ -130,6 +130,7 @@ void FbTerm::init()
 	sigaddset(&sigmask, SIGALRM);
 	sigaddset(&sigmask, SIGTERM);
 	sigaddset(&sigmask, SIGHUP);
+	sigaddset(&sigmask, SIGIO);
 
 	sigprocmask(SIG_BLOCK, &sigmask, &oldSigmask);
 	new SignalIo(sigmask);
@@ -142,6 +143,7 @@ void FbTerm::init()
 	signal(SIGALRM, sh);
 	signal(SIGTERM, sh);
 	signal(SIGHUP, sh);
+	signal(SIGIO, sh);
 #endif
 	signal(SIGPIPE, SIG_IGN);
 
@@ -214,6 +216,11 @@ void FbTerm::processSignal(u32 signo)
 				FbShellManager::instance()->childProcessExited(pid);
 			}
 		}
+		break;
+
+	case SIGIO:
+		Screen::instance()->redrawBg();
+		FbShellManager::instance()->redraw(0, 0, Screen::instance()->cols(), Screen::instance()->rows());
 		break;
 
 	default:

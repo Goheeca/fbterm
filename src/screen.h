@@ -56,6 +56,8 @@ public :
 	void showInfo(bool verbose);
 	virtual void switchVc(bool enter);
 
+	void redrawBg();
+
 protected:
 	u32 mWidth, mHeight;
 	u16 mCols, mRows;
