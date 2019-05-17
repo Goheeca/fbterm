@@ -15,18 +15,18 @@ AC_PROG_CC
 AC_PROG_RANLIB
 PKG_PROG_PKG_CONFIG
 
-AC_ARG_ENABLE(gpm, 
-              AC_HELP_STRING([--disable-gpm], [disable gpm mouse support [[default=auto]]]), 
+AC_ARG_ENABLE(gpm,
+              AC_HELP_STRING([--disable-gpm], [disable gpm mouse support [[default=auto]]]),
               [GPM="$enableval"],
               [GPM=auto])
-              
-AC_ARG_ENABLE(vesa, 
-              AC_HELP_STRING([--disable-vesa], [disable VESA video card support [[default=auto]]]), 
+
+AC_ARG_ENABLE(vesa,
+              AC_HELP_STRING([--disable-vesa], [disable VESA video card support [[default=auto]]]),
               [VESA="$enableval"],
               [VESA=auto])
 
-AC_ARG_ENABLE(epoll, 
-              AC_HELP_STRING([--disable-epoll], [do not use epoll system call [[default=auto]]]), 
+AC_ARG_ENABLE(epoll,
+              AC_HELP_STRING([--disable-epoll], [do not use epoll system call [[default=auto]]]),
               [EPOLL="$enableval"],
               [EPOLL=auto])
 
@@ -35,11 +35,12 @@ AC_ARG_ENABLE(signalfd,
               [SIGNALFD="$enableval"],
               [SIGNALFD=auto])
 
-                                          
+
 # Checks for libraries.
 AC_CHECK_LIB([util], [forkpty])
 PKG_CHECK_MODULES([FT2], [freetype2])
 PKG_CHECK_MODULES([FC], [fontconfig])
+AC_CHECK_LIB([rt], [shm_open])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -66,7 +67,7 @@ if test x"$GPM" != xno; then
 	AC_CHECK_HEADERS([gpm.h])
 	if test x"$GPM" = xauto; then
 		GPM="$ac_cv_header_gpm_h"
-		[[ "$GPM" = "no" ]] && GPM_WARN=yes 
+		[[ "$GPM" = "no" ]] && GPM_WARN=yes
 	elif test x"$ac_cv_header_gpm_h" != xyes; then
 		AC_MSG_ERROR(can't find gpm.h required by gpm mouse support!)
 	fi
