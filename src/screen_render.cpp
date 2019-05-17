@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <stdio.h>
 #include "screen.h"
 #include "fbconfig.h"
 
@@ -97,6 +98,7 @@ void Screen::initFillDraw()
 			if (falloc = fallocate(mBackgroundFd, FALLOC_FL_ZERO_RANGE, 0, mSize)) {
  				mBackgroundData = mmap(NULL, mSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, mBackgroundFd, 0);
 				redrawBg();
+				snprintf((char *)mBackgroundData, mSize, "%u", getpid());
 			}
 		}
 	}
