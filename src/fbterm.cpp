@@ -221,8 +221,10 @@ void FbTerm::processSignal(u32 signo)
 
 	case SIGIO:
 		if (isActiveTerm()) {
+			Screen::instance()->switchDestinationBuffer();
 			Screen::instance()->redrawBg();
 			FbShellManager::instance()->redraw(0, 0, Screen::instance()->cols(), Screen::instance()->rows());
+			Screen::instance()->switchRenderedBuffer();
 		}
 		break;
 

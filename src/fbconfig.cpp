@@ -218,6 +218,9 @@ void Config::checkConfigFile(const s8 *name)
 		"# available values: 0 = 0 degree, 1 = 90 degrees, 2 = 180 degrees, 3 = 270 degrees\n"
 		"screen-rotate=0\n"
 		"\n"
+		"# use double buffering\n"
+		"double-buffer=no\n"
+		"\n"
 		"# specify the favorite input method program to run\n"
 		"input-method=\n"
 		"\n"
@@ -247,6 +250,7 @@ bool Config::parseArgs(s32 argc, s8 **argv)
 		{ "color-background", required_argument, 0, 'b' },
 		{ "text-encodings", required_argument, 0, 'e' },
 		{ "screen-rotate", required_argument, 0, 'r' },
+		{ "double-buffer", no_argument, 0, 'd' },
 		{ "input-method", required_argument, 0, 'i' },
 		{ "cursor-shape", required_argument, 0, 0 },
 		{ "cursor-interval", required_argument, 0, 1 },
@@ -260,7 +264,7 @@ bool Config::parseArgs(s32 argc, s8 **argv)
 	};
 
 	s32 index;
-	while ((index = getopt_long(argc, argv, "Vvhn:s:f:b:e:r:i:a", options, 0)) != -1) {
+	while ((index = getopt_long(argc, argv, "Vvhn:s:f:b:e:r:di:a", options, 0)) != -1) {
 		switch (index) {
 		case 'V':
 			printf("FbTerm version " VERSION "\n");
@@ -283,6 +287,7 @@ bool Config::parseArgs(s32 argc, s8 **argv)
 				"  -b, --color-background=NUM      specify background color\n"
 				"  -e, --text-encodings=TEXT       specify additional text encodings\n"
 				"  -r, --screen-rotate=NUM         specify orientation of screen display\n"
+				"  -d, --double-buffer             use double buffering\n"
 				"  -a, --ambiguous-wide            treat ambiguous width characters as wide\n"
 				"  -i, --input-method=TEXT         specify input method program\n"
 				"      --cursor-shape=NUM          specify default cursor shape\n"

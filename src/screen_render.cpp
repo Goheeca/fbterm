@@ -25,6 +25,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <linux/fb.h>
+#include <sys/ioctl.h>
 #include "screen.h"
 #include "fbconfig.h"
 
@@ -39,6 +41,12 @@ static u32 fillColors[NR_COLORS];
 static u8 *bgimage_mem;
 static u8 bgcolor;
 static char *backgroundPath = NULL;
+
+static bool low_buffer_destination = true;
+static bool low_buffer_rendered = true;
+
+extern fb_var_screeninfo vinfo;
+extern s32 fbdev_fd;
 
 void Screen::setPalette(const Color *palette)
 {
@@ -133,6 +141,33 @@ void Screen::redrawBg()
 		mempcpy(bgimage_mem, mBackgroundData, mSize);
 		eraseMargin(true, mRows);
 	}
+}
+
+void Screen::switchRenderedBuffer()
+{
+	if (!mDoubleBuffer) {
+		return;
+	}
+	if (low_buffer_rendered) {
+		vinfo.yoffset += vinfo.yres;
+	} else {
+		vinfo.yoffset -= vinfo.yres;
+	}
+	ioctl(fbdev_fd, FBIOPAN_DISPLAY, &vinfo);
+	low_buffer_rendered = !low_buffer_rendered;
+}
+
+void Screen::switchDestinationBuffer()
+{
+	if (!mDoubleBuffer) {
+		return;
+	}
+	if(low_buffer_destination) {
+		mVMemBase += mSize;
+	} else {
+		mVMemBase -= mSize;
+	}
+	low_buffer_destination = !low_buffer_destination;
 }
 
 void Screen::checkBackgroundPath() {

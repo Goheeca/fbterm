@@ -26,6 +26,7 @@
 #include <sys/mman.h>
 #include <linux/kd.h>
 #include <linux/fb.h>
+#include "fbconfig.h"
 #include "fbdev.h"
 #include "font.h"
 
@@ -33,9 +34,10 @@
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
 static fb_fix_screeninfo finfo;
-static fb_var_screeninfo vinfo;
+fb_var_screeninfo vinfo;
 
-static s32 fbdev_fd;
+s32 fbdev_fd;
+//static size_t mem_len;
 
 FbDev *FbDev::initFbDev()
 {
@@ -93,10 +95,22 @@ FbDev::FbDev()
 	mHeight = vinfo.yres;
 	mBitsPerPixel = vinfo.bits_per_pixel;
 	mBytesPerLine = finfo.line_length;
-	mVMemBase = (u8 *)mmap(0, finfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, fbdev_fd, 0);
+	mDoubleBuffer = false;
 
+	Config::instance()->getOption("double-buffer", mDoubleBuffer);
+	mDoubleBuffer &= vinfo.yres_virtual >= 2 * vinfo.yres;
+	/*mem_len = finfo.smem_len;
+	if (mDoubleBuffer) {
+		mem_len *= 2;
+		//vinfo.yres_virtual *= 2;
+		//ioctl(fbdev_fd, FBIOPUT_VSCREENINFO, &vinfo);
+	}*/
 
-	if (mRotateType == Rotate0 || mRotateType == Rotate180) {
+	mStaticVMemBase = mVMemBase = (u8 *)mmap(0, finfo.smem_len, PROT_READ | PROT_WRITE, MAP_SHARED, fbdev_fd, 0);
+
+	if (mDoubleBuffer) {
+		mScrollType = Redraw;
+	} else if (mRotateType == Rotate0 || mRotateType == Rotate180) {
 		bool ypan = (vinfo.yres_virtual > vinfo.yres && finfo.ypanstep && !(FH(1) % finfo.ypanstep));
 		bool ywrap = (finfo.ywrapstep && !(FH(1) % finfo.ywrapstep));
 		if (ywrap && !(vinfo.vmode & FB_VMODE_YWRAP)) {
@@ -119,7 +133,7 @@ FbDev::FbDev()
 
 FbDev::~FbDev()
 {
-	munmap(mVMemBase, finfo.smem_len);
+	munmap(mStaticVMemBase, finfo.smem_len);
 	close(fbdev_fd);
 
 	if (mScrollType != Redraw) {

@@ -58,6 +58,8 @@ public :
 
 	void redrawBg();
 	void checkBackgroundPath();
+	void switchDestinationBuffer();
+	void switchRenderedBuffer();
 
 protected:
 	u32 mWidth, mHeight;
@@ -72,6 +74,8 @@ protected:
 	s32 mOffsetCur;
 
 	u8 *mVMemBase;
+	u8 *mStaticVMemBase;
+	bool mDoubleBuffer;
 	const Color *mPalette;
 
 private:
