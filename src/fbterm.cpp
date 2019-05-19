@@ -192,6 +192,7 @@ void FbTerm::processSignal(u32 signo)
 
 	case SIGALRM:
 		FbShellManager::instance()->drawCursor();
+		Screen::instance()->checkBackgroundPath();
 		break;
 
 	case SIGUSR1:

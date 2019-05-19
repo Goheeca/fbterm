@@ -92,14 +92,8 @@ void Screen::initFillDraw()
 		bgimage_mem = new u8[mSize];
 		if (!backgroundPath) {
 			memcpy(bgimage_mem, mVMemBase, mSize);
-		} else if ((mBackgroundFd = shm_open(backgroundPath, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR)) != -1) {
-			ftruncate(mBackgroundFd, mSize);
-			int falloc = 0;
-			if (falloc = fallocate(mBackgroundFd, FALLOC_FL_ZERO_RANGE, 0, mSize)) {
- 				mBackgroundData = mmap(NULL, mSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, mBackgroundFd, 0);
-				mempcpy(bgimage_mem, mBackgroundData, mSize);
-				snprintf((char *)mBackgroundData, mSize, "%u", getpid());
-			}
+		} else {
+			checkBackgroundPath();
 		}
 	}
 
@@ -138,6 +132,25 @@ void Screen::redrawBg()
 	if (mBackgroundData != MAP_FAILED) {
 		mempcpy(bgimage_mem, mBackgroundData, mSize);
 		eraseMargin(true, mRows);
+	}
+}
+
+void Screen::checkBackgroundPath() {
+	int oldFd = mBackgroundFd;
+	if ((mBackgroundFd = shm_open(backgroundPath, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR)) != -1) {
+		if (oldFd != -1) {
+			if (mBackgroundData != MAP_FAILED) {
+				munmap(mBackgroundData, mSize);
+			}
+			close(oldFd);
+		}
+		ftruncate(mBackgroundFd, mSize);
+		int falloc = 0;
+		if (falloc = fallocate(mBackgroundFd, FALLOC_FL_ZERO_RANGE, 0, mSize)) {
+			mBackgroundData = mmap(NULL, mSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, mBackgroundFd, 0);
+			mempcpy(bgimage_mem, mBackgroundData, mSize);
+			snprintf((char *)mBackgroundData, mSize, "%u", getpid());
+		}
 	}
 }
 

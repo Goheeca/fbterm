@@ -57,6 +57,7 @@ public :
 	virtual void switchVc(bool enter);
 
 	void redrawBg();
+	void checkBackgroundPath();
 
 protected:
 	u32 mWidth, mHeight;
