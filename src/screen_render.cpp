@@ -97,7 +97,7 @@ void Screen::initFillDraw()
 			int falloc = 0;
 			if (falloc = fallocate(mBackgroundFd, FALLOC_FL_ZERO_RANGE, 0, mSize)) {
  				mBackgroundData = mmap(NULL, mSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, mBackgroundFd, 0);
-				redrawBg();
+				mempcpy(bgimage_mem, mBackgroundData, mSize);
 				snprintf((char *)mBackgroundData, mSize, "%u", getpid());
 			}
 		}
@@ -137,6 +137,7 @@ void Screen::redrawBg()
 {
 	if (mBackgroundData != MAP_FAILED) {
 		mempcpy(bgimage_mem, mBackgroundData, mSize);
+		eraseMargin(true, mRows);
 	}
 }
 
