@@ -221,6 +221,7 @@ void FbTerm::processSignal(u32 signo)
 
 	case SIGIO:
 		if (isActiveTerm()) {
+			Screen::instance()->waitForVSync();
 			Screen::instance()->updateBg();
 			FbShellManager::instance()->redraw();
 		}

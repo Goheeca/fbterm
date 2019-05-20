@@ -55,6 +55,7 @@ public :
 
 	void showInfo(bool verbose);
 	virtual void switchVc(bool enter);
+	virtual bool waitForVSync();
 
 	void updateBg();
 	void updateMargin();

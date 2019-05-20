@@ -147,6 +147,13 @@ void Screen::switchVc(bool enter)
 	if (enter && mPalette) eraseMargin(true, mRows);
 }
 
+bool Screen::waitForVSync()
+{
+	static bool enabled = true;
+	Config::instance()->getOption("vsync", enabled);
+	return enabled;
+}
+
 bool Screen::move(u16 scol, u16 srow, u16 dcol, u16 drow, u16 w, u16 h)
 {
 	if (!mScrollEnable || mScrollType == Redraw || scol != dcol) return false;

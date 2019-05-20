@@ -223,6 +223,9 @@ void Config::checkConfigFile(const s8 *name)
 		"\n"
 		"# treat ambiguous width characters as wide\n"
 		"#ambiguous-wide=yes\n"
+		"\n"
+		"# enable vsync\n"
+		"#vsync=yes\n"
 		;
 
 	struct stat cstat;
@@ -253,6 +256,7 @@ bool Config::parseArgs(s32 argc, s8 **argv)
 		{ "font-width", required_argument, 0, 2 },
 		{ "font-height", required_argument, 0, 4 },
 		{ "ambiguous-wide", no_argument, 0, 'a' },
+		{ "vsync", no_argument, 0, 'y' },
 #ifdef ENABLE_VESA
 		{ "vesa-mode", required_argument, 0, 3 },
 #endif
@@ -260,7 +264,7 @@ bool Config::parseArgs(s32 argc, s8 **argv)
 	};
 
 	s32 index;
-	while ((index = getopt_long(argc, argv, "Vvhn:s:f:b:e:r:i:a", options, 0)) != -1) {
+	while ((index = getopt_long(argc, argv, "Vvhn:s:f:b:e:r:i:ay", options, 0)) != -1) {
 		switch (index) {
 		case 'V':
 			printf("FbTerm version " VERSION "\n");
@@ -284,6 +288,7 @@ bool Config::parseArgs(s32 argc, s8 **argv)
 				"  -e, --text-encodings=TEXT       specify additional text encodings\n"
 				"  -r, --screen-rotate=NUM         specify orientation of screen display\n"
 				"  -a, --ambiguous-wide            treat ambiguous width characters as wide\n"
+				"  -y, --vsync                     enable vsync\n"
 				"  -i, --input-method=TEXT         specify input method program\n"
 				"      --cursor-shape=NUM          specify default cursor shape\n"
 				"      --cursor-interval=NUM       specify cursor flash interval\n"

@@ -34,5 +34,6 @@ private:
 	virtual void setupOffset();
 	virtual void setupPalette(bool restore);
 	virtual const s8 *drvId();
+	virtual bool waitForVSync();
 };
 #endif

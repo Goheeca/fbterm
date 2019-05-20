@@ -206,3 +206,15 @@ void FbDev::setupPalette(bool restore)
 		ioctl(fbdev_fd, FBIOPUTCMAP, &cmap);
 	}
 }
+
+bool FbDev::waitForVSync()
+{
+	static bool enabled = Screen::waitForVSync();
+	if (enabled) {
+		int zero = 0;
+		if(ioctl(fbdev_fd, FBIO_WAITFORVSYNC, &zero) == -1) {
+			enabled = false;
+		}
+	}
+	return enabled;
+}
