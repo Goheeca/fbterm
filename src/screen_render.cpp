@@ -39,6 +39,7 @@ static u32 fillColors[NR_COLORS];
 static u8 *bgimage_mem;
 static u8 bgcolor;
 static char *backgroundPath = NULL;
+static bool double_buffer = false;
 
 void Screen::setPalette(const Color *palette)
 {
@@ -88,6 +89,8 @@ void Screen::initFillDraw()
 		if (color > 7) color = 0;
 		bgcolor = color;
 
+		Config::instance()->getOption("input-double-buffer", double_buffer);
+
 		mSize = mBytesPerLine * ((mRotateType == Rotate0 || mRotateType == Rotate180) ? mHeight : mWidth);
 		bgimage_mem = new u8[mSize];
 		if (!backgroundPath) {
@@ -123,14 +126,24 @@ void Screen::endFillDraw()
 			munmap(mBackgroundData, mSize);
 		}
 		close(mBackgroundFd);
+	}
+	if (backgroundPath) {
 		shm_unlink(backgroundPath);
 	}
 }
 
-void Screen::updateBg()
+void Screen::updateBg(bool lower_buffer)
 {
 	if (mBackgroundData != MAP_FAILED) {
-		mempcpy(bgimage_mem, mBackgroundData, mSize);
+		if (!double_buffer) {
+			mempcpy(bgimage_mem, mBackgroundData, mSize);
+		} else {
+			if (lower_buffer) {
+				mempcpy(bgimage_mem, mBackgroundData, mSize);
+			} else {
+				mempcpy(bgimage_mem, mBackgroundData + mSize, mSize);
+			}
+		}
 	}
 }
 
@@ -141,17 +154,18 @@ void Screen::updateMargin()
 
 void Screen::checkBackgroundPath() {
 	int oldFd = mBackgroundFd;
+	size_t size = double_buffer ? 2 * mSize : mSize;
 	if ((mBackgroundFd = shm_open(backgroundPath, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR)) != -1) {
 		if (oldFd != -1) {
 			if (mBackgroundData != MAP_FAILED) {
-				munmap(mBackgroundData, mSize);
+				munmap(mBackgroundData, size);
 			}
 			close(oldFd);
 		}
-		ftruncate(mBackgroundFd, mSize);
+		ftruncate(mBackgroundFd, size);
 		int falloc = 0;
-		if (falloc = fallocate(mBackgroundFd, FALLOC_FL_ZERO_RANGE, 0, mSize)) {
-			mBackgroundData = mmap(NULL, mSize, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, mBackgroundFd, 0);
+		if (falloc = fallocate(mBackgroundFd, FALLOC_FL_ZERO_RANGE, 0, size)) {
+			mBackgroundData = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_POPULATE, mBackgroundFd, 0);
 			mempcpy(bgimage_mem, mBackgroundData, mSize);
 			snprintf((char *)mBackgroundData, mSize, "%u", getpid());
 		}

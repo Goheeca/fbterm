@@ -131,6 +131,7 @@ void FbTerm::init()
 	sigaddset(&sigmask, SIGTERM);
 	sigaddset(&sigmask, SIGHUP);
 	sigaddset(&sigmask, SIGIO);
+	sigaddset(&sigmask, SIGURG);
 
 	sigprocmask(SIG_BLOCK, &sigmask, &oldSigmask);
 	new SignalIo(sigmask);
@@ -144,6 +145,7 @@ void FbTerm::init()
 	signal(SIGTERM, sh);
 	signal(SIGHUP, sh);
 	signal(SIGIO, sh);
+	signal(SIGURG, sh);
 #endif
 	signal(SIGPIPE, SIG_IGN);
 
@@ -219,9 +221,10 @@ void FbTerm::processSignal(u32 signo)
 		}
 		break;
 
+	case SIGURG:
 	case SIGIO:
 		if (isActiveTerm()) {
-			Screen::instance()->updateBg();
+			Screen::instance()->updateBg(SIGIO == signo);
 			FbShellManager::instance()->redraw();
 		}
 		break;
