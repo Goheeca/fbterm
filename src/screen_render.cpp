@@ -123,6 +123,8 @@ void Screen::endFillDraw()
 			munmap(mBackgroundData, mSize);
 		}
 		close(mBackgroundFd);
+	}
+	if (backgroundPath) {
 		shm_unlink(backgroundPath);
 	}
 }
