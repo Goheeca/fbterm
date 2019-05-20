@@ -44,6 +44,7 @@ public:
 	void redraw(u16 x, u16 y, u16 w, u16 h);
 	void switchVc(bool enter);
 	void childProcessExited(s32 pid);
+	void redraw();
 
 private:
 	u32 getIndex(FbShell *shell, bool forward, bool stepfirst);

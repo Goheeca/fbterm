@@ -29,6 +29,7 @@ public:
 	void mouseInput(u16 x, u16 y, s32 type, s32 buttons);
 	void switchCodec(u8 index);
 	void expose(u16 x, u16 y, u16 w, u16 h);
+	void exposeContent(u16 x, u16 y, u16 w, u16 h);
 	void toggleIm();
 	void killIm();
 	void imInput(s8 *buf, u32 len);
@@ -52,7 +53,7 @@ private:
 	void switchVt(bool enter, FbShell *peer);
 	void adjustCharAttr(CharAttr &attr);
 	void enableCursor(bool enable);
-	void updateCursor();
+	void updateCursor(bool flip);
 	void clearMousePointer();
 
 	void changeMode(ModeType type, u16 val);

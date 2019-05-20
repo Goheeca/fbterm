@@ -393,17 +393,17 @@ void FbShell::drawCursor(CharAttr attr, u16 x, u16 y, u16 c)
 	mCursor.code = c;
 	mCursor.showed = false;
 
-	updateCursor();
+	updateCursor(true);
 
 	if (manager->activeShell() == this && (oldX != x || oldY != y)) {
 		reportCursor();
 	}
 }
 
-void FbShell::updateCursor()
+void FbShell::updateCursor(bool flip)
 {
 	if (manager->activeShell() != this || mCursor.x >= w() || mCursor.y >= h()) return;
-	mCursor.showed ^= true;
+	mCursor.showed ^= flip;
 
 	u16 shape = mode(CursorShape);
 	if (shape == CurDefault) {
@@ -692,7 +692,16 @@ void FbShell::expose(u16 x, u16 y, u16 w, u16 h)
 
 	if (mode(CursorVisible) && mCursor.y >= y && mCursor.y < (y + h) && mCursor.x >= x && mCursor.x < (x + w)) {
 		mCursor.showed = false;
-		updateCursor();
+		updateCursor(true);
+	}
+}
+
+void FbShell::exposeContent(u16 x, u16 y, u16 w, u16 h)
+{
+	VTerm::expose(x, y, w, h);
+
+	if (mode(CursorVisible) && mCursor.y >= y && mCursor.y < (y + h) && mCursor.x >= x && mCursor.x < (x + w)) {
+		updateCursor(false);
 	}
 }
 

@@ -127,12 +127,16 @@ void Screen::endFillDraw()
 	}
 }
 
-void Screen::redrawBg()
+void Screen::updateBg()
 {
 	if (mBackgroundData != MAP_FAILED) {
 		mempcpy(bgimage_mem, mBackgroundData, mSize);
-		eraseMargin(true, mRows);
 	}
+}
+
+void Screen::updateMargin()
+{
+	eraseMargin(true, mRows);
 }
 
 void Screen::checkBackgroundPath() {

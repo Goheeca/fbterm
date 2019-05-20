@@ -56,7 +56,8 @@ public :
 	void showInfo(bool verbose);
 	virtual void switchVc(bool enter);
 
-	void redrawBg();
+	void updateBg();
+	void updateMargin();
 	void checkBackgroundPath();
 
 protected:

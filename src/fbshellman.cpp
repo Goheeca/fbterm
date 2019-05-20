@@ -82,7 +82,7 @@ void FbShellManager::switchShell(u32 num)
 void FbShellManager::drawCursor()
 {
 	if (mActiveShell) {
-		mActiveShell->updateCursor();
+		mActiveShell->updateCursor(true);
 	}
 }
 
@@ -164,6 +164,17 @@ void FbShellManager::redraw(u16 x, u16 y, u16 w, u16 h)
 	} else {
 		screen->fillRect(FW(x), FH(y), FW(w), FH(h), 0);
 	}
+}
+
+void FbShellManager::redraw()
+{
+	u16 x = 0, y = 0, w = screen->cols(), h = screen->rows();
+	if (mActiveShell) {
+		mActiveShell->exposeContent(x, y, w, h);
+	} else {
+		screen->fillRect(FW(x), FH(y), FW(w), FH(h), 0);
+	}
+	screen->updateMargin();
 }
 
 void FbShellManager::childProcessExited(s32 pid)
