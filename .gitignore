@@ -1,0 +1,13 @@
+*.o
+*.a
+.*
+*cache/
+config.*
+stamp*
+Makefile
+*/Makefile
+*/*/Makefile
+doc/*
+src/fbterm
+im/*
+compile
